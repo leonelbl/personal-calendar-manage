@@ -13,7 +13,7 @@ async function bootstrap() {
   });
 
   // SET DEFAULT PORT TO 3001
-  const port = process.env.PORT || 4000;
+  const port = process.env.PORT || 3001;
   await app.listen(port);
   
   console.log(`🚀 Backend running on: http://localhost:${port}`);
