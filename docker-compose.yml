@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  # Servicio de PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: booking-postgres
+    restart: unless-stopped
+    
+    environment:
+      # Credenciales de la base de datos
+      POSTGRES_USER: booking_user
+      POSTGRES_PASSWORD: booking_pass
+      POSTGRES_DB: booking_db
+      
+    ports:
+      # Mapear puerto 5432 del contenedor al 5432 del host
+      - "5432:5432"
+      
+    volumes:
+      # Persistir datos en un volumen nombrado
+      - postgres_data:/var/lib/postgresql/data
+    
+    # Verificar que PostgreSQL está listo antes de aceptar conexiones
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U booking_user -d booking_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# Definir volúmenes
+volumes:
+  postgres_data:
+    driver: local
