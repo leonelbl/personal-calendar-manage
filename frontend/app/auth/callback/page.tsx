@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/presentation/hooks/use-auth-store';
+import { storage } from '@/infrastructure/storage/local-storage';
+import { authApi } from '@/infrastructure/api/auth.api';
 
 /**
  * Callback page for Google OAuth
@@ -14,40 +16,78 @@ export default function AuthCallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const login = useAuthStore((state) => state.login);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Get token from URL
-    const token = searchParams.get('token');
+    const processAuth = async () => {
+      try {
+        // 1. Get token from URL
+        const token = searchParams.get('token');
 
-    if (!token) {
-      console.error('No token found in URL');
-      router.push('/auth/error');
-      return;
-    }
+        if (!token) {
+          console.error('No token found in URL');
+          router.push('/auth/error');
+          return;
+        }
 
-    try {
-      // Decode the JWT payload (just to get user data)
-      // Note: We're not validating, just reading public data
-      const payload = JSON.parse(atob(token.split('.')[1]));
+        // 2. Save token temporarily in localStorage
+        // (the axios interceptor will use it for the next request)
+        storage.setToken(token);
 
-      // Create user object from payload
-      const user = {
-        id: payload.sub,
-        email: payload.email,
-        name: payload.email.split('@')[0], // Temporal, idealmente viene del backend
-        picture: undefined,
-      };
+        // 3. Get complete user data from backend
+        const userData = await authApi.getMe();
 
-      // Save to store (and localStorage)
-      login(token, user);
+        // 4. Save in global store (and update localStorage)
+        login(token, userData);
 
-      // Redirect to dashboard
-      router.push('/dashboard');
-    } catch (error) {
-      console.error('Error processing token:', error);
-      router.push('/auth/error');
-    }
+        // 5. Redirect to dashboard
+        router.push('/dashboard');
+      } catch (err) {
+        console.error('Error processing authentication:', err);
+        setError('Error processing authentication');
+
+        // Clear invalid token
+        storage.removeToken();
+
+        // Redirect to error after 2 seconds
+        setTimeout(() => {
+          router.push('/auth/error');
+        }, 2000);
+      }
+    };
+
+    processAuth();
   }, [searchParams, login, router]);
+
+   if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+            <svg
+              className="h-6 w-6 text-red-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-700 mb-2">
+            {error}
+          </h2>
+          <p className="text-gray-500">
+            Redirecting...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

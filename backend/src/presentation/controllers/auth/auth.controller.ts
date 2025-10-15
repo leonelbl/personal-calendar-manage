@@ -4,6 +4,7 @@ import { GoogleAuthGuard } from '../../guards/google-auth.guard';
 import { GoogleLoginUseCase } from '../../../core/use-cases/auth/google-login.use-case';
 import { GoogleUserDto } from '../../dto/auth.dto';
 import { envConfig } from '../../../infrastructure/config/env.config';
+import { JwtAuthGuard } from 'src/presentation/guards/jwt-auth.guard';
 
 /**
  * AuthController
@@ -61,11 +62,26 @@ export class AuthController {
         `${frontendUrl}/auth/callback?token=${authResponse.accessToken}`,
       );
     } catch (error) {
-      console.error('Error en Google callback:', error);
+      console.error('Error in Google callback:', error);
       
       // Redirect to frontend error page
       const config = envConfig();
       return res.redirect(`${config.frontend.url}/auth/error`);
     }
+  }
+
+  /**
+   * GET /auth/me
+   * 
+   * get authenticated user info
+   * Requires valid JWT in Authorization header
+   */
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  async getMe(@Req() req: Request) {
+    // req.user comes from JwtStrategy.validate()
+    return {
+      user: req.user,
+    };
   }
 }

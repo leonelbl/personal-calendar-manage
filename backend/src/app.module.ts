@@ -3,11 +3,15 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { AuthModule } from './presentation/controllers/auth/auth.module';
+import { BookingsModule } from './presentation/controllers/bookings/bookings.module';
+import { GoogleModule } from './infrastructure/google/google.module';
 
 @Module({
   imports: [
     DatabaseModule,
-    AuthModule
+    GoogleModule,
+    AuthModule,
+    BookingsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
