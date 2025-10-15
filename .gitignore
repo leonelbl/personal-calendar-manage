@@ -13,6 +13,9 @@ backend/tmp/
 backend/.temp/
 backend/.tmp/
 
+# Generated Prisma client
+backend/generated/prisma/
+
 # Backend logs
 backend/logs/
 backend/*.log
@@ -36,6 +39,11 @@ frontend/.next/
 frontend/out/
 frontend/build/
 frontend/dist/
+# testing
+frontend/coverage
+
+# production
+frontend/build
 
 # Next.js cache
 frontend/.next/cache/
