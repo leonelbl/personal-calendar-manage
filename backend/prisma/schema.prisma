@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// User Model
+// ============================================
+model User {
+  // (Primary key)
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  picture       String?   // Google avatar
+  googleId      String    @unique
+  // Google token (access to Calendar API)
+  accessToken   String?   @db.Text
+  refreshToken  String?   @db.Text
+  tokenExpiry   DateTime?
+  // One to many [user to bookings]
+  bookings      Booking[]
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  @@map("users")
+}
+
+// ============================================
+// Booking Model
+// ============================================
+model Booking {
+  // (Primary key)
+  id          String   @id @default(cuid())
+  //(Foreign Key)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade) //delete user and bookings
+  title       String
+  startTime   DateTime @db.Timestamptz
+  endTime     DateTime @db.Timestamptz
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  // index for queries
+  @@index([userId])
+  @@index([startTime, endTime])
+  // table name postgresql
+  @@map("bookings")
+}
