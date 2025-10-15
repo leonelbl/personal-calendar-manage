@@ -6,7 +6,7 @@ import { AuthGuard } from '@nestjs/passport';
  * 
  * Guard that initiates Google OAuth2 authentication.
  * 
- * Uso:
+ * Use:
  * @UseGuards(GoogleAuthGuard)
  * @Get('google')
  * googleAuth() {
