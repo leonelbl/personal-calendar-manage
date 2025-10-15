@@ -1,15 +1,20 @@
-# Nestjs specific
-backend/dist
-backend/node_modules
-backend/build
-backend/tmp
+# ============================================
+# DEPENDENCIES
+# ============================================
+**/node_modules/
+**/.pnpm-store/
+pnpm-lock.yaml
+# ============================================
+# BACKEND (NestJS)
+# ============================================
+backend/dist/
+backend/build/
+backend/tmp/
+backend/.temp/
+backend/.tmp/
 
-#pnpm specific
-.pnpm-store/ 
-backend/pnpm-store/
-
-# Logs
-backend/logs
+# Backend logs
+backend/logs/
 backend/*.log
 backend/npm-debug.log*
 backend/pnpm-debug.log*
@@ -17,12 +22,50 @@ backend/yarn-debug.log*
 backend/yarn-error.log*
 backend/lerna-debug.log*
 
-# dotenv environment variable files
+# Backend environment variables
 backend/.env
 backend/.env.development
 backend/.env.test
 backend/.env.production
+backend/.env.local
+backend/.env.*.local
+# ============================================
+# FRONTEND (Next.js)
+# ============================================
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/dist/
 
-# temp directory
-backend/.temp
-backend/.tmp
+# Next.js cache
+frontend/.next/cache/
+
+# Frontend logs
+frontend/*.log
+frontend/npm-debug.log*
+frontend/pnpm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# Frontend environment variables
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/.env.*.local
+
+# Next.js generated files
+frontend/next-env.d.ts
+# ============================================
+# IDE & EDITORS
+# ============================================
+# VSCode
+.vscode/
+*.code-workspace
+# ============================================
+# EXCEPTIONS (keep these files)
+# ============================================
+!backend/.env.example
+!frontend/.env.example
+!.env.example
