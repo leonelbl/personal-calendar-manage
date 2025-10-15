@@ -321,11 +321,3 @@ lsof -ti:3000 | xargs kill -9
 # Kill process on port 3001 (backend)
 lsof -ti:3001 | xargs kill -9
 ```
-
-## 📝 License
-
-This project is private and unlicensed.
-
-## 👨‍💻 Author
-
-Developed with ❤️ by [Your Name]
