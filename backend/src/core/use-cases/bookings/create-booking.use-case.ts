@@ -1,5 +1,6 @@
 import { Injectable, ConflictException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../infrastructure/database/prisma.service';
+import { GoogleCalendarService } from 'src/infrastructure/google/google-calendar.service';
 
 /**
  * CreateBookingUseCase
@@ -7,11 +8,19 @@ import { PrismaService } from '../../../infrastructure/database/prisma.service';
  * Validate and create a new booking.
  * 1. Valid times (startTime < endTime)
  * 2. No conflicts with existing bookings
- * 3. No conflicts with Google Calendar (coming soon)
+ * 3. No conflicts with Google Calendar
+ * 4. Create the booking in the database
+ * 
+ * If any validation fails, throw an appropriate exception.
+ * 
+ * Note: This use case assumes the user is authenticated and userId is valid.
  */
 @Injectable()
 export class CreateBookingUseCase {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly googleCalendarService: GoogleCalendarService,
+  ) {}
 
   async execute(
     userId: string,
@@ -32,19 +41,44 @@ export class CreateBookingUseCase {
     }
 
     // 2. Check for conflicts with existing user bookings 
-    const hasConflict = await this.checkInternalConflicts(
+    const hasInternalConflict = await this.checkInternalConflicts(
       userId,
       data.startTime,
       data.endTime,
     );
 
-    if (hasConflict) {
+    if (hasInternalConflict) {
       throw new ConflictException(
         'This time slot conflicts with an existing booking',
       );
     }
 
-    // 3. Create the booking
+    // 3. Check for conflicts with Google Calendar
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { accessToken: true },
+    });
+
+    if (user?.accessToken) {
+      const googleConflictResult = await this.googleCalendarService.checkConflicts(
+        user.accessToken,
+        data.startTime,
+        data.endTime,
+      );
+
+      if (googleConflictResult.hasConflict) {
+        // Obtener nombres de eventos conflictivos
+        const eventNames = googleConflictResult.events
+          ?.map((e) => e.summary)
+          .join(', ');
+
+        throw new ConflictException(
+          `This time slot conflicts with Google Calendar events: ${eventNames || 'Unknown events'}`,
+        );
+      }
+    }
+
+    // 4. Create the booking
     return this.prisma.booking.create({
       data: {
         userId,

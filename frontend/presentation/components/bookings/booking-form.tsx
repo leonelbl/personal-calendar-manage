@@ -60,7 +60,8 @@ export function BookingForm({ onSubmit, onCancel }: BookingFormProps) {
       // Reset form
       e.currentTarget.reset();
     } catch (err: any) {
-      setError(err.message || 'Error creating booking');
+      const errorMessage = err.response?.data?.message || 'An error occurred while creating the booking';      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
