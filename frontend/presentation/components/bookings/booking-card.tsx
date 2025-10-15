@@ -2,7 +2,7 @@
 
 import { Booking } from '@/shared/types/booking.types';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import { Trash2, Calendar, Clock } from 'lucide-react';
 
 interface BookingCardProps {
@@ -15,7 +15,7 @@ interface BookingCardProps {
  */
 export function BookingCard({ booking, onDelete }: BookingCardProps) {
   const handleDelete = () => {
-    if (confirm('¿Estás seguro de eliminar esta reserva?')) {
+    if (confirm('Are you sure you want to delete this booking?')) {
       onDelete(booking.id);
     }
   };
@@ -36,7 +36,7 @@ export function BookingCard({ booking, onDelete }: BookingCardProps) {
           <div className="flex items-center text-sm text-gray-600 mb-2">
             <Calendar className="w-4 h-4 mr-2" />
             <span>
-              {format(startDate, "d 'de' MMMM, yyyy", { locale: es })}
+              {format(startDate, "MMMM d, yyyy", { locale: enUS })}
             </span>
           </div>
 

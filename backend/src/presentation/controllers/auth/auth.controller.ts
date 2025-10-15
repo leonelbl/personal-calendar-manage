@@ -62,7 +62,7 @@ export class AuthController {
         `${frontendUrl}/auth/callback?token=${authResponse.accessToken}`,
       );
     } catch (error) {
-      console.error('Error en Google callback:', error);
+      console.error('Error in Google callback:', error);
       
       // Redirect to frontend error page
       const config = envConfig();
@@ -79,7 +79,7 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async getMe(@Req() req: Request) {
-    // req.user viene de JwtStrategy.validate()
+    // req.user comes from JwtStrategy.validate()
     return {
       user: req.user,
     };

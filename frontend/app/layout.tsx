@@ -6,8 +6,8 @@ import { AuthProvider } from "@/presentation/providers/auth-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Booking App",
-  description: "Sistema de reservas con Google Calendar",
+  title: "Personal Booking App",
+  description: "Booking system with Google Calendar integration",
 };
 
 export default function RootLayout({
@@ -16,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es">
+    <html lang="en">
       <body className={inter.className}>
         <AuthProvider>
           {children}

@@ -92,7 +92,7 @@ export function BookingForm({ onSubmit, onCancel }: BookingFormProps) {
           type="text"
           id="title"
           name="title"
-          placeholder="Ej: Meeting with John"
+          placeholder="e.g.: Meeting with John"
           required
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
