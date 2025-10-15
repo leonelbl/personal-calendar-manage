@@ -4,6 +4,7 @@ import { GoogleAuthGuard } from '../../guards/google-auth.guard';
 import { GoogleLoginUseCase } from '../../../core/use-cases/auth/google-login.use-case';
 import { GoogleUserDto } from '../../dto/auth.dto';
 import { envConfig } from '../../../infrastructure/config/env.config';
+import { JwtAuthGuard } from 'src/presentation/guards/jwt-auth.guard';
 
 /**
  * AuthController
@@ -67,5 +68,20 @@ export class AuthController {
       const config = envConfig();
       return res.redirect(`${config.frontend.url}/auth/error`);
     }
+  }
+
+  /**
+   * GET /auth/me
+   * 
+   * get authenticated user info
+   * Requires valid JWT in Authorization header
+   */
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  async getMe(@Req() req: Request) {
+    // req.user viene de JwtStrategy.validate()
+    return {
+      user: req.user,
+    };
   }
 }
