@@ -1,18 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/presentation/hooks/use-auth-store';
 import { storage } from '@/infrastructure/storage/local-storage';
 import { authApi } from '@/infrastructure/api/auth.api';
 
+// do now pre render this page at build time
+export const dynamic = 'force-dynamic';
+
 /**
- * Callback page for Google OAuth
- *
- * Google redirects here after authorizing with the token in the URL.
- * This page extracts the token, saves it, and redirects to the dashboard.
+ * Inner component that uses useSearchParams
+ * Must be wrapped in Suspense boundary
  */
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const login = useAuthStore((state) => state.login);
@@ -59,7 +60,7 @@ export default function AuthCallbackPage() {
     processAuth();
   }, [searchParams, login, router]);
 
-   if (error) {
+  if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -102,5 +103,30 @@ export default function AuthCallbackPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+/**
+ * Callback page for Google OAuth
+ *
+ * Google redirects here after authorizing with the token in the URL.
+ * This page extracts the token, saves it, and redirects to the dashboard.
+ */
+export default function AuthCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
+            <h2 className="text-xl font-semibold text-gray-700">
+              Cargando...
+            </h2>
+          </div>
+        </div>
+      }
+    >
+      <AuthCallbackContent />
+    </Suspense>
   );
 }

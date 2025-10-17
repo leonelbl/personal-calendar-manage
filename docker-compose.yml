@@ -1,34 +1,109 @@
-version: '3.8'
+
 
 services:
-  # PostgreSQL Service
+  # ================================
+  # PostgreSQL Database
+  # ================================
   postgres:
     image: postgres:15-alpine
     container_name: booking-postgres
     restart: unless-stopped
     
     environment:
-      # Database credentials
       POSTGRES_USER: booking_user
       POSTGRES_PASSWORD: booking_pass
       POSTGRES_DB: booking_db
-      
+    
     ports:
-      # Map container port 5432 to host port 5432
       - "5432:5432"
-      
+    
     volumes:
-      # Persist data in a named volume
       - postgres_data:/var/lib/postgresql/data
     
-    # Verify that PostgreSQL is ready before accepting connections
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U booking_user -d booking_db"]
       interval: 10s
       timeout: 5s
       retries: 5
+    
+    networks:
+      - booking-network
 
-# Define volumes
+  # ================================
+  # Backend (NestJS)
+  # ================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    
+    container_name: booking-backend
+    restart: unless-stopped
+    
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://booking_user:booking_pass@postgres:5432/booking_db?schema=public
+      JWT_SECRET: ${JWT_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-http://localhost:3001/auth/google/callback}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+    
+    ports:
+      - "3001:3001"
+    
+    depends_on:
+      postgres:
+        condition: service_healthy
+    
+    networks:
+      - booking-network
+    
+    # Run migrations on startup
+    command: >
+      sh -c "
+        pnpm prisma migrate deploy &&
+        node dist/main
+      "
+
+  # ================================
+  # Frontend (Next.js)
+  # ================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+    
+    container_name: booking-frontend
+    restart: unless-stopped
+    
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+    
+    ports:
+      - "3000:3000"
+    
+    depends_on:
+      - backend
+    
+    networks:
+      - booking-network
+
+# ================================
+# Networks
+# ================================
+networks:
+  booking-network:
+    driver: bridge
+
+# ================================
+# Volumes
+# ================================
 volumes:
   postgres_data:
     driver: local
